@@ -76,20 +76,26 @@ export class PostsController {
             const postId = req.params.id;
             const userId = req.userId;
             const caption = req.body.caption;
-            console.log(postId);
+
             const filePath = "uploadedFiles/" + req.file.filename;
-            const post = PostsModel.updatePost(postId, userId, caption, filePath);
+            const post = await PostRepository.updatePost(postId, userId, caption, filePath);
+            if (!post) {
+                return res.status(400).send("Post is not created by the user");
+            }
             return res.status(200).send({ status: "Post Updated successfully", Post: post });
         } catch (error) {
             next(error);
         }
     }
 
-    deletePost(req, res, next) {
+    async deletePost(req, res, next) {
         try {
-            const id = req.params.id;
+            const postId = req.params.id;
             const userId = req.userId;
-            PostsModel.deletePost(id, userId);
+            const deleteStatus = await PostRepository.deletePost(postId, userId);
+            if (!deleteStatus) {
+                return res.status(400).send("Only the user who created the post can delete it!");
+            }
             return res.status(200).send("Post deleted!");
         } catch (error) {
             console.error("Error: ", error);

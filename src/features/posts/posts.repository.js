@@ -1,7 +1,7 @@
 import { postModel } from "./posts.schema.js";
 
 
-export class PostRepository{
+export class PostRepository {
     static async createPost(userId, caption, filePath) {
         try {
             const post = new postModel({
@@ -21,7 +21,7 @@ export class PostRepository{
 
     static async getAllPosts() {
         try {
-            const posts = await postModel.find({}).select({ caption: 1, imageUrl: 1, _id:0 });
+            const posts = await postModel.find({}).select({ caption: 1, imageUrl: 1, _id: 0 });
             return posts;
         } catch (error) {
             throw error;
@@ -40,6 +40,38 @@ export class PostRepository{
     static async getPostById(id) {
         try {
             return await postModel.findById(id).select({ caption: 1, imageUrl: 1, _id: 0 });
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    static async updatePost(postId, userId, caption, filePath) {
+        try {
+            const filter = {
+                _id: postId,
+                userId: userId
+            }
+            const update = {
+                caption: caption.trim(),
+                imageUrl: filePath
+            };
+            const options = { new: true };
+
+            const updatedPost = await postModel.findOneAndUpdate(filter, update, options).select({ caption: 1, imageUrl: 1, _id: 0 });
+            return updatedPost;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    static async deletePost(postId, userId) {
+        try {
+            const filter = {
+                _id: postId,
+                userId: userId
+            }
+            const deleteStatus = await postModel.findOneAndDelete(filter);
+            return deleteStatus;
         } catch (error) {
             throw error;
         }
