@@ -84,6 +84,7 @@ export class PostsController {
             }
             return res.status(200).send({ status: "Post Updated successfully", Post: post });
         } catch (error) {
+            console.error("Error: ", error);
             next(error);
         }
     }
@@ -102,6 +103,17 @@ export class PostsController {
             next(error);
         }
 
+    }
+
+    async getPostStatus(req, res, next) {
+        try {
+            const postId = req.params.postId;
+            const postStats = await PostRepository.getPostStatus(postId);
+            return res.status(200).send({ status: postStats });
+        } catch (error) {
+            console.error("Error: ", error);
+            next(error);
+        }
     }
 
     // draftPost(req, res, next) {

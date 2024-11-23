@@ -5,6 +5,7 @@ import { PostsController } from './posts.controller.js';
 const postsRouter = express.Router();
 const postsController = new PostsController();
 
+postsRouter.get('/postStatus/:postId', postsController.getPostStatus);
 postsRouter.get('/all', postsController.getAllPosts);
 postsRouter.get('/:id', postsController.getPostById);
 postsRouter.get('/', postsController.getUserPosts);

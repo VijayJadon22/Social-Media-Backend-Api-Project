@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 
-export const userSchema = new mongoose.Schema({
+const userSchema = new mongoose.Schema({
     name: {
         type: String,
         required: true,
@@ -27,6 +27,7 @@ export const userSchema = new mongoose.Schema({
     }
 });
 
+
 userSchema.pre('save', async function (next) {
     if (this.isModified('password')) {
         const saltRounds = 10;
@@ -34,3 +35,5 @@ userSchema.pre('save', async function (next) {
     }
     next();
 })
+
+export const userModel = mongoose.model("users", userSchema);

@@ -1,4 +1,4 @@
-import { UserModel } from "./user.model.js";
+
 import jwt from 'jsonwebtoken';
 import { UserRepository } from "./user.repository.js";
 
@@ -14,7 +14,7 @@ export class UserController {
             console.log(users);
             return res.status(200).send({ Users: users });
         } catch (error) {
-            console.error(error);
+            console.error("Error: ", error);
             next(error);
         }
     }
@@ -31,7 +31,7 @@ export class UserController {
             }
             return res.status(200).send({ status: "User Registered Succesfully", User: user });
         } catch (error) {
-            console.error(error);
+            console.error("Error: ", error);
             next(error);
         }
 
@@ -56,11 +56,11 @@ export class UserController {
                 userId: userRegistered._id,
                 userEmail: userRegistered.email
             }
-            const secretKey = "XqGKZo8C2z";
+            const secretKey = process.env.JWT_SECRET_KEY;
             const token = jwt.sign(payload, secretKey, { expiresIn: "1h" });
             return res.status(200).send({ status: "Login Successfull", token: token });
         } catch (error) {
-            console.error(error);
+            console.error("Error: ", error);
             next(error);
         }
     }

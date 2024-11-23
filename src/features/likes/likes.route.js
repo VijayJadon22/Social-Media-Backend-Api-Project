@@ -7,4 +7,5 @@ const likesController = new LikesController();
 likeRouter.get('/toggle/:postId', likesController.toggleLike);
 likeRouter.get('/:postId', likesController.getLikesOnPost);
 
+
 export default likeRouter;

@@ -1,6 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 
-export const postSchema = new mongoose.Schema({
+const postSchema = new mongoose.Schema({
     userId: {
         type: Schema.Types.ObjectId,
         ref: "users",

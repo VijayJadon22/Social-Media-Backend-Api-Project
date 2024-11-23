@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
-import { userSchema } from "./user.Schema.js";
+import { userModel } from "./user.Schema.js";
+import { friendsModel } from "../friends/friends.schema.js";
 
-const userModel = mongoose.model("users", userSchema);
 
 export class UserRepository {
     static async createUser(name, email, password) {
@@ -18,9 +18,17 @@ export class UserRepository {
              just before saving validator is gonna work on the actual 
              password entered by the user */
             await user.save();
+
+            // creating the friends document for the user 
+            const friendsDocument = new friendsModel({
+                name: name,
+                userId: user._id
+            });
+            await friendsDocument.save();
+
             return {
                 name: user.name,
-                email:user.email
+                email: user.email
             };
         } catch (error) {
             throw error;

@@ -1,3 +1,5 @@
+import { commentModel } from "../comments/comments.schema.js";
+import { likeModel } from "../likes/likes.schema.js";
 import { postModel } from "./posts.schema.js";
 
 
@@ -72,6 +74,19 @@ export class PostRepository {
             }
             const deleteStatus = await postModel.findOneAndDelete(filter);
             return deleteStatus;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    static async getPostStatus(postId) {
+        try {
+            const totalLikes = await likeModel.countDocuments({ postId });
+            const totalComments = await commentModel.countDocuments({ postId });
+            return {
+                Likes: totalLikes,
+                Comments: totalComments
+            };
         } catch (error) {
             throw error;
         }
