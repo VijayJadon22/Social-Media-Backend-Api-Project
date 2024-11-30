@@ -21,9 +21,9 @@ const server = express();
 server.use(bodyParser.json());
 
 server.use('/api/users', userRouter);
-server.use('/api/post', logger, jwtAuth, postsRouter);
-server.use('/api/comment', logger, jwtAuth, commentRouter);
-server.use('/api/like', logger, jwtAuth, likeRouter);
+server.use('/api/posts', logger, jwtAuth, postsRouter);
+server.use('/api/comments', logger, jwtAuth, commentRouter);
+server.use('/api/likes', logger, jwtAuth, likeRouter);
 server.use('/api/friend', logger, jwtAuth, friendsRouter);
 
 server.use((err, req, res, next) => {

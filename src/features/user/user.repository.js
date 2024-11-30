@@ -45,9 +45,51 @@ export class UserRepository {
 
     static async getAllUsers() {
         try {
+            // Find all users and select only name and email fields, excluding _id
             return await userModel.find({}).select({ name: 1, email: 1, _id: 0 });
+        } catch (error) {
+            // Throw any error that occurs
+            throw error;
+        }
+    }
+
+    static async getUserDetailsById(userId) {
+        try {
+            // Find the user by ID
+            const user = await userModel.findById(userId).select({ password: 0, _id: 0, __v: 0 }); // Exclude password and _id field for security
+
+            // If user is not found, return undefined
+            if (!user) {
+                return undefined;
+            }
+
+            // Return the user details
+            return user;
         } catch (error) {
             throw error;
         }
     }
+
+    static async updateUserDetails(name, email, userId) {
+        try {
+            // Using findByIdAndUpdate with the option to return the updated document
+            const userDocument = await userModel.findByIdAndUpdate(
+                userId,
+                { name, email },
+                { new: true, runValidators: true } // Return the updated document and run validators
+            ).select('name email -_id');
+
+            // If user is not found, return undefined
+            if (!userDocument) {
+                return undefined;
+            }
+
+            // Return the updated user details
+            return userDocument;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+
 }

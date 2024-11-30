@@ -8,9 +8,10 @@ export class PostsController {
 
     async getAllPosts(req, res, next) {
         try {
+            console.log("hello");
             const posts = await PostRepository.getAllPosts();
-            if (!posts) {
-                return res.status(400).send("No posts posted");
+            if (!posts || posts.length==0) {
+                return res.status(400).send("No posts!");
             }
             return res.status(200).send({ Posts: posts });
         } catch (error) {
@@ -28,13 +29,13 @@ export class PostsController {
                 throw new ApplicationError("No image uploaded", 400);
             }
             console.log(userId, caption);
-            const filePath = 'uploadedFiles/' + req.file.filename;
-            // const postCreated = PostsModel.createPost(userId, caption.trim(), filePath);
+            const filePath = '/uploadedFiles/' + req.file.filename;
             const postCreated = await PostRepository.createPost(userId, caption.trim(), filePath);
             if (!postCreated) {
                 return res.status(400).send("Post not posted");
             }
-            return res.status(200).send({ Status: "Posted!", Post: postCreated });
+            console.log(postCreated);
+            return res.status(200).send({ Status: "Posted!", postCreated });
         } catch (error) {
             console.error("Error: ", error);
             next(error);
@@ -43,11 +44,11 @@ export class PostsController {
 
     async getUserPosts(req, res, next) {
         try {
-            const id = req.userId;
-            console.log(id);
-            const userPosts = await PostRepository.getUserPosts(id);
+            const userId = req.userId;
+            console.log(userId);
+            const userPosts = await PostRepository.getUserPosts(userId);
             if (!userPosts || userPosts.length == 0) {
-                return res.status(400).send("No posts for user");
+                return res.status(400).send("No posts by user");
             }
             return res.status(200).send({ Posts: userPosts });
         } catch (error) {
@@ -58,8 +59,8 @@ export class PostsController {
 
     async getPostById(req, res, next) {
         try {
-            const id = req.params.id;
-            const post = await PostRepository.getPostById(id);
+            const postId = req.params.postId;
+            const post = await PostRepository.getPostById(postId);
             if (!post) {
                 return res.status(400).send("Post not found");
             }
@@ -73,7 +74,7 @@ export class PostsController {
 
     async updatePost(req, res, next) {
         try {
-            const postId = req.params.id;
+            const postId = req.params.postId;
             const userId = req.userId;
             const caption = req.body.caption;
 
@@ -91,12 +92,13 @@ export class PostsController {
 
     async deletePost(req, res, next) {
         try {
-            const postId = req.params.id;
+            const postId = req.params.postId;
             const userId = req.userId;
             const deleteStatus = await PostRepository.deletePost(postId, userId);
             if (!deleteStatus) {
                 return res.status(400).send("Only the user who created the post can delete it!");
             }
+            console.log(deleteStatus);
             return res.status(200).send("Post deleted!");
         } catch (error) {
             console.error("Error: ", error);

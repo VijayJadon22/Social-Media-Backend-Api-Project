@@ -6,12 +6,12 @@ import { postModel } from "./posts.schema.js";
 export class PostRepository {
     static async createPost(userId, caption, filePath) {
         try {
-            const post = new postModel({
+            /* used create method here to create a document and save it as we dont havr to perform and pre save hook here like before saving user we have used a prehook where we are hashing the password before saving */
+            const post = await postModel.create({
                 userId,
                 caption,
                 imageUrl: filePath
             });
-            await post.save();
             return {
                 caption: post.caption,
                 image: post.imageUrl
@@ -23,25 +23,27 @@ export class PostRepository {
 
     static async getAllPosts() {
         try {
+            console.log("hello");
             const posts = await postModel.find({}).select({ caption: 1, imageUrl: 1, _id: 0 });
+            console.log(posts);
             return posts;
         } catch (error) {
             throw error;
         }
     }
 
-    static async getUserPosts(id) {
+    static async getUserPosts(userId) {
         try {
-            const userPosts = await postModel.find({ userId: id }).select({ caption: 1, imageUrl: 1, _id: 0 });
+            const userPosts = await postModel.find({ userId: userId }).select({ caption: 1, imageUrl: 1, _id: 0 });
             return userPosts;
         } catch (error) {
             throw error;
         }
     }
 
-    static async getPostById(id) {
+    static async getPostById(postId) {
         try {
-            return await postModel.findById(id).select({ caption: 1, imageUrl: 1, _id: 0 });
+            return await postModel.findById(postId).select({ caption: 1, imageUrl: 1, _id: 0 });
         } catch (error) {
             throw error;
         }

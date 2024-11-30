@@ -9,10 +9,22 @@ export class UserController {
 
     async getAllUsers(req, res, next) {
         try {
-            // const users = UserModel.getUsers();
             const users = await UserRepository.getAllUsers();
-            console.log(users);
             return res.status(200).send({ Users: users });
+        } catch (error) {
+            console.error("Error: ", error);
+            next(error);
+        }
+    }
+
+    async getUserDetailsById(req, res, next) {
+        try {
+            const userId = req.params.userId;
+            const user = await UserRepository.getUserDetailsById(userId);
+            if (!user) {
+                return res.status(400).send("User not found");
+            }
+            return res.status(200).send({ User: user });
         } catch (error) {
             console.error("Error: ", error);
             next(error);
@@ -59,6 +71,21 @@ export class UserController {
             const secretKey = process.env.JWT_SECRET_KEY;
             const token = jwt.sign(payload, secretKey, { expiresIn: "1h" });
             return res.status(200).send({ status: "Login Successfull", token: token });
+        } catch (error) {
+            console.error("Error: ", error);
+            next(error);
+        }
+    }
+
+    async updateUserDetails(req, res, next) {
+        try {
+            const userId = req.params.userId;
+            const { name, email } = req.body;
+            const updatedUserDetails = await UserRepository.updateUserDetails(name, email, userId);
+            if (!updatedUserDetails) {
+                return res.status(400).send("User details not updated");
+            }
+            return res.status(200).send({ status: "User details updated", user: updatedUserDetails });
         } catch (error) {
             console.error("Error: ", error);
             next(error);

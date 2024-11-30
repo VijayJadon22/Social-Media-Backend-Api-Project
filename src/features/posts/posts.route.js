@@ -7,12 +7,11 @@ const postsController = new PostsController();
 
 postsRouter.get('/postStatus/:postId', postsController.getPostStatus);
 postsRouter.get('/all', postsController.getAllPosts);
-postsRouter.get('/:id', postsController.getPostById);
+postsRouter.get('/:postId', postsController.getPostById);
 postsRouter.get('/', postsController.getUserPosts);
-postsRouter.put('/:id', fileUpload.single('postImage'), postsController.updatePost);
+postsRouter.put('/:postId', fileUpload.single('postImage'), postsController.updatePost);
 
 postsRouter.post('/', fileUpload.single('postImage'), postsController.createPost);
-// postsRouter.post('/draft', fileUpload.single('postImage'), postsController.createPost);
-postsRouter.delete('/:id', postsController.deletePost);
+postsRouter.delete('/:postId', postsController.deletePost);
 
 export default postsRouter;
