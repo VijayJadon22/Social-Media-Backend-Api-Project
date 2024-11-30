@@ -3,126 +3,120 @@ import { friendsModel } from "./friends.schema.js";
 
 
 export class FriendsRepository {
-    static async sendRequest(senderId, recipientId) {
-        try {
-            const recipient = await friendsModel.findOne({ userId: recipientId });
-
-            // If the recipient does not exist throw an error
-            if (!recipient) {
-                throw new ApplicationError("User does not exist", 404);
-            }
-            // Check if already friends
-            if (recipient.friends.includes(senderId)) {
-                return "User is already a friend";
-            }
-            // Check if request already sent
-            if (recipient.requests.includes(senderId)) {
-                return "Request Already sent";
-            }
-            // Add senderId to the recipient's requests array
-            recipient.requests.push(senderId);
-            await recipient.save();
-            return "Request sent successfully";
-        } catch (error) {
-            throw error;
-        }
-    }
-
+    
     static async getUserRequests(userId) {
         try {
-            const userDocument = await friendsModel.findOne({ userId });
+            // Find the user document and populate the requests field with user names
+            const userDocument = await friendsModel.findOne({ userId }).populate("requests", "name");
+
             if (!userDocument) {
                 throw new ApplicationError("User does not exist", 404);
             }
-            return userDocument.requests;
+
+            // Extract the names of the users in the requests array
+            const userRequests = userDocument.requests.map(request => request.name);
+
+            return userRequests;
         } catch (error) {
             throw error;
         }
     }
+
     static async getUserFriends(userId) {
         try {
-            const userDocument = await friendsModel.findOne({ userId });
+            const userDocument = await friendsModel.findOne({ userId }).populate("friends", "name");
             if (!userDocument) {
                 throw new ApplicationError("User does not exist", 404);
             }
-            return userDocument.friends;
+            const friendsName = userDocument.friends.map(friend => friend.name);
+            return friendsName;
         } catch (error) {
             throw error;
         }
     }
 
-    static async acceptRequest(userId, senderId) {
+    static async toggleFriendship(userId, friendId) {
         try {
             const userDocument = await friendsModel.findOne({ userId });
-            // Check if the request exists
-            if (!userDocument.requests.includes(senderId)) {
-                throw new ApplicationError("Request not found", 404);
-            }
-            // Add senderId to the friends array
-            userDocument.friends.push(senderId);
-
-            // Remove senderId from the requests array
-            userDocument.requests = userDocument.requests.filter(id => id.toString() != senderId.toString());
-
-            // Save the updated document
-            await userDocument.save();
-
-            // Also add userId to the sender's friends array
-            const sendersDocument = await friendsModel.findOne({ userId: senderId });
-            sendersDocument.friends.push(userId);
-            await sendersDocument.save();
-
-            return userDocument;
-        } catch (error) {
-            throw error;
-        }
-    }
-
-
-    static async rejectRequest(userId, senderId) {
-        try {
-            const userDocument = await friendsModel.findOne({ userId });
-
-            // Check if the request exists
-            if (!userDocument.requests.includes(senderId)) {
-                throw new ApplicationError("Friend request not found", 404);
-            }
-
-            // Remove senderId from the requests array
-            userDocument.requests = userDocument.requests.filter(id => id.toString() != senderId.toString());
-
-            // Save the updated document
-            await userDocument.save();
-
-            return userDocument;
-        } catch (error) {
-            throw error;
-        }
-    }
-
-    static async removeFriend(userId, friendId) {
-        try {
-            // Find user document
-            const userDocument = await friendsModel.findOne({ userId });
-            if (!userDocument.friends.includes(friendId)) {
-                throw new ApplicationError("User is not a friend", 404);
-            }
-
-            // Remove friendId from user's friends list
-            userDocument.friends = userDocument.friends.filter(id => id.toString() !== friendId.toString());
-            await userDocument.save();
-
-            // Remove userId from friend's friends list
             const friendDocument = await friendsModel.findOne({ userId: friendId });
-            friendDocument.friends = friendDocument.friends.filter(id => id.toString() !== userId.toString());
-            await friendDocument.save();
 
-            return userDocument;
+            if (!userDocument || !friendDocument) {
+                throw new ApplicationError("User or friend does not exist", 404);
+            }
+
+            // Check if they are already friends
+            const isFriend = userDocument.friends.includes(friendId);
+            if (isFriend) {
+                // Remove from both friends lists if they are already friends
+                userDocument.friends.pull(friendId);
+                friendDocument.friends.pull(userId);
+                await userDocument.save();
+                await friendDocument.save();
+                return 'Friend removed';
+            }
+
+            // Check if there is already a pending friend request from friendId
+            const isRequestReceived = userDocument.requests.includes(friendId);
+            if (isRequestReceived) {
+                // Accept the friend request
+                userDocument.friends.push(friendId);
+                friendDocument.friends.push(userId);
+                userDocument.requests.pull(friendId);
+                await userDocument.save();
+                await friendDocument.save();
+                return 'Friend request accepted';
+            }
+
+            // Check if there is already a pending friend request from userId to friendId
+            const isRequestSent = friendDocument.requests.includes(userId);
+            if (isRequestSent) {
+                return 'Friend request already sent';
+            }
+
+            // If no existing friendship or request, send a new friend request
+            friendDocument.requests.push(userId);
+            await friendDocument.save();
+            return 'Friend request sent';
         } catch (error) {
             throw error;
         }
     }
 
+    static async respondToRequest(userId, friendId, action) {
+        try {
+            const userDocument = await friendsModel.findOne({ userId });
+            const friendDocument = await friendsModel.findOne({ userId: friendId });
 
+            if (!userDocument || !friendDocument) {
+                throw new ApplicationError("User or friend does not exist", 404);
+            }
 
+            // Check if there's a pending friend request from friendId
+            const isRequestReceived = userDocument.requests.includes(friendId);
+            if (!isRequestReceived) {
+                return 'No friend request found';
+            }
+
+            if (action === 'accept') {
+                // Accept the friend request
+                userDocument.friends.push(friendId);
+                friendDocument.friends.push(userId);
+                userDocument.requests.pull(friendId);
+                await userDocument.save();
+                await friendDocument.save();
+                return 'Friend request accepted';
+            }
+
+            if (action === 'reject') {
+                // Reject the friend request
+                userDocument.requests.pull(friendId);
+                await userDocument.save();
+                return 'Friend request rejected';
+            }
+
+            return 'Invalid action';
+        } catch (error) {
+            throw error;
+        }
+    }
 }

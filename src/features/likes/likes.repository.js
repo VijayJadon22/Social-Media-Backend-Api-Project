@@ -10,12 +10,14 @@ export class LikesRepository {
     static async getLikesOnPostOrComment(id) {
         try {
             // Find likes where either postId or commentId matches the provided ID
-            const likes = await likeModel.find({
+            let likes = await likeModel.find({
                 $or: [
                     { postId: id },
                     { commentId: id }
                 ]
             }).populate("userId", "name"); // Populate userId field with only the name
+
+            likes = likes.map(like => like.userId.name);
 
             return likes;
         } catch (error) {
@@ -23,7 +25,7 @@ export class LikesRepository {
         }
     }
 
-    static async toggleLike(userId, id, type) {
+    static async toggleLikeOnPostOrComment(id, userId, type) {
         try {
             const query = type === 'post' ? { userId, postId: id } : { userId, commentId: id };
 

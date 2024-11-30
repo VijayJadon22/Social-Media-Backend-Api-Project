@@ -24,7 +24,7 @@ server.use('/api/users', userRouter);
 server.use('/api/posts', logger, jwtAuth, postsRouter);
 server.use('/api/comments', logger, jwtAuth, commentRouter);
 server.use('/api/likes', logger, jwtAuth, likeRouter);
-server.use('/api/friend', logger, jwtAuth, friendsRouter);
+server.use('/api/friends', logger, jwtAuth, friendsRouter);
 
 server.use((err, req, res, next) => {
     if (err instanceof ApplicationError) {

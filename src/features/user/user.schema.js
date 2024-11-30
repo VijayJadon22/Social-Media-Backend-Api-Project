@@ -24,8 +24,20 @@ const userSchema = new mongoose.Schema({
             },
             message: 'Password must be at least 8 characters long and include uppercase, lowercase, number, and special character'
         }
+    },
+    otp: {
+        type: String,
+        default: null,
+    },
+    otpExpires: {
+        type: Date,
+        default: null,
+    },
+    otpVerified: {
+        type: Boolean,
+        default: null,
     }
-});
+}, { timestamps: true });
 
 
 userSchema.pre('save', async function (next) {
