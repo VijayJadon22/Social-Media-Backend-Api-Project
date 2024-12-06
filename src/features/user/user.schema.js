@@ -25,8 +25,15 @@ const userSchema = new mongoose.Schema({
             message: 'Password must be at least 8 characters long and include uppercase, lowercase, number, and special character'
         }
     },
+    gender: {
+        type: String,
+        enum: ["male", "female"],
+        required: true,
+    },
+    tokens: [String],
     otp: {
         type: String,
+        trim: true,
         default: null,
     },
     otpExpires: {

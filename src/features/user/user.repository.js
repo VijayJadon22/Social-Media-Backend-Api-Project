@@ -2,14 +2,14 @@ import mongoose from "mongoose";
 import { userModel } from "./user.Schema.js";
 import { friendsModel } from "../friends/friends.schema.js";
 
-
 export class UserRepository {
-    static async createUser(name, email, password) {
+    static async createUser(name, email, password, gender) {
         try {
             const user = new userModel({
                 name,
                 email,
-                password
+                password,
+                gender
             });
             /* hashing of password is handled in pre 'save' hook of userSchema
              so before saving password will be hashed also the validator function of 
@@ -86,6 +86,37 @@ export class UserRepository {
 
             // Return the updated user details
             return userDocument;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    static async logout(token, userId) {
+        try {
+            const result = await userModel.findOneAndUpdate(
+                { _id: userId },
+                { $pull: { tokens: token } },
+                { new: true } // Return the updated document
+            );
+            return !!result; // Returns true if a document was found and updated, otherwise false
+            /* result will be null or undefined if no document was found.
+                result will be the updated document if the update operation succeeded.
+                By using !!result, you convert:
+                A truthy value (the updated document) to true.
+                A falsy value (null or undefined) to false. */
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    static async logoutAll(userId, token) {
+        try {
+            const userDocument = await userModel.findOneAndUpdate(
+                { _id: userId },
+                { $set: { tokens: [] } },
+                { new: true },
+            );
+            return !!userDocument;
         } catch (error) {
             throw error;
         }

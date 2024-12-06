@@ -34,10 +34,10 @@ export class UserController {
     async signup(req, res, next) {
         try {
             console.log(req.body);
-            const { name, email, password } = req.body;
-            // const hashedPassword = await bcrypt.hash(password, saltRounds);
+            const { name, email, password, gender } = req.body;
+
             // hashing of password is handled in pre 'save' hook of userSchema
-            const user = await UserRepository.createUser(name, email, password);
+            const user = await UserRepository.createUser(name, email, password, gender);
             if (!user) {
                 return res.status(400).send("User not created!");
             }
@@ -70,6 +70,11 @@ export class UserController {
             }
             const secretKey = process.env.JWT_SECRET_KEY;
             const token = jwt.sign(payload, secretKey, { expiresIn: "1h" });
+
+            // insert the token into tokens field of userDocument for logout functionality
+            userRegistered.tokens.push(token);
+            await userRegistered.save({ validateBeforeSave: false });
+
             return res.status(200).send({ status: "Login Successfull", token: token });
         } catch (error) {
             console.error("Error: ", error);
@@ -86,6 +91,42 @@ export class UserController {
                 return res.status(400).send("User details not updated");
             }
             return res.status(200).send({ status: "User details updated", user: updatedUserDetails });
+        } catch (error) {
+            console.error("Error: ", error);
+            next(error);
+        }
+    }
+
+    async logout(req, res, next) {
+        try {
+            const token = req.headers["authorization"];
+            const userId = req.userId;
+            if (!token) {
+                return res.status(400).send("Unauthorized, token expected");
+            }
+
+            const logoutStatus = await UserRepository.logout(token, userId);
+
+            if (logoutStatus) {
+                return res.status(200).send("Logged out successfully");
+            } else {
+                return res.status(400).send("Logout failed");
+            }
+        } catch (error) {
+            console.error("Error: ", error);
+            next(error);
+        }
+    }
+
+    async logoutAll(req, res, next) {
+        try {
+            const userId = req.userId;
+            const token = req.headers["authorization"];
+            const logoutAllStatus = await UserRepository.logoutAll(userId, token);
+            if (logoutAllStatus) {
+                return res.status(200).send("Logged out of all devices successfully");
+            }
+            return res.status(400).send("Logout failed");
         } catch (error) {
             console.error("Error: ", error);
             next(error);

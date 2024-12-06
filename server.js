@@ -8,11 +8,13 @@ import userRouter from './src/features/user/user.route.js';
 import postsRouter from './src/features/posts/posts.route.js';
 import commentRouter from './src/features/comments/comments.route.js';
 import likeRouter from './src/features/likes/likes.route.js';
+import otpRouter from "./src/features/otp/otp.route.js";
 import { ApplicationError } from './src/error-handler/applicationError.js';
 import { jwtAuth } from './src/middlewares/jwt.middleware.js';
 import { logger } from './src/middlewares/logger.middleware.js';
 import { connectWithMongoDb } from './src/config/mongooseConfig.js';
 import friendsRouter from "./src/features/friends/friends.route.js";
+
 
 
 const PORT = 7500;
@@ -25,6 +27,7 @@ server.use('/api/posts', logger, jwtAuth, postsRouter);
 server.use('/api/comments', logger, jwtAuth, commentRouter);
 server.use('/api/likes', logger, jwtAuth, likeRouter);
 server.use('/api/friends', logger, jwtAuth, friendsRouter);
+server.use('/api/otp', logger, jwtAuth, otpRouter);
 
 server.use((err, req, res, next) => {
     if (err instanceof ApplicationError) {
